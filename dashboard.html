@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Muraqib Dashboard</title>
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: #04070c;
+  color: #7090a0;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+}
+
+#header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 14px;
+  background: #020508;
+  border-bottom: 1px solid #0d1e2c;
+  height: 38px;
+}
+
+.logo {
+  font-size: 22px;
+  font-weight: bold;
+  letter-spacing: 6px;
+  color: #00d4ff;
+}
+
+.logo small {
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: #1e3040;
+  display: block;
+  margin-top: -2px;
+}
+
+.header-right {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  font-size: 11px;
+}
+
+#clock {
+  color: #00d4ff;
+}
+
+.signal {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #222;
+}
+
+.dot.live {
+  background: #00ff88;
+  box-shadow: 0 0 8px #00ff88;
+}
+
+#status-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 6px 14px;
+  border-bottom: 1px solid #0d1e2c;
+  height: 30px;
+  transition: background 0.3s;
+}
+
+#status-bar.CLEAR {
+  background: rgba(0, 255, 136, 0.03);
+}
+
+#status-bar.BAG_DETECTED {
+  background: rgba(255, 123, 0, 0.05);
+}
+
+#status-bar.THREAT {
+  background: rgba(255, 26, 26, 0.1);
+}
+
+.pill {
+  padding: 3px 12px;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  border-radius: 2px;
+}
+
+.pill.CLEAR {
+  background: #00ff88;
+  color: #000;
+}
+
+.pill.BAG_DETECTED {
+  background: #ff7b00;
+  color: #000;
+}
+
+.pill.THREAT {
+  background: #ff1a1a;
+  color: #fff;
+}
+
+.meta {
+  display: flex;
+  gap: 16px;
+  color: #1e3040;
+  font-size: 10px;
+}
+
+.meta span {
+  color: #b8d8e8;
+}
+
+#body {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  height: calc(100vh - 68px);
+  gap: 1px;
+  background: #0d1e2c;
+}
+
+#left {
+  display: grid;
+  grid-template-rows: 1fr 170px;
+  gap: 1px;
+  background: #0d1e2c;
+}
+
+#feed-wrap {
+  position: relative;
+  background: #000;
+  overflow: hidden;
+}
+
+#feed {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+#feed-wrap.threat::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 3px solid #ff1a1a;
+  pointer-events: none;
+}
+
+#bottom-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 175px;
+  gap: 1px;
+  background: #0d1e2c;
+}
+
+.panel {
+  background: #070c13;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-header {
+  padding: 5px 10px;
+  background: #020508;
+  border-bottom: 1px solid #0d1e2c;
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: #1e3040;
+}
+
+.target-body {
+  padding: 8px 10px;
+  flex: 1;
+}
+
+.target-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+  border-bottom: 1px solid #0d1e2c;
+}
+
+.target-label {
+  color: #1e3040;
+  font-size: 10px;
+}
+
+.target-value {
+  color: #b8d8e8;
+  font-size: 10px;
+}
+
+.target-value.alert {
+  color: #ff1a1a;
+}
+
+#timeline {
+  flex: 1;
+  overflow-y: auto;
+  padding: 5px 10px;
+  font-size: 9px;
+  line-height: 1.9;
+}
+
+.log-entry {
+  color: #1e3040;
+}
+
+.log-entry.warn {
+  color: #ff7b00;
+}
+
+.log-entry.threat {
+  color: #ff1a1a;
+}
+
+.log-entry.new {
+  color: #b8d8e8;
+}
+
+#weapon-zoom {
+  flex: 1;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#weapon-zoom img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+#weapon-zoom span {
+  color: #1e3040;
+  font-size: 9px;
+  letter-spacing: 2px;
+}
+
+#sidebar {
+  background: #070c13;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#persons {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px;
+}
+
+.person-card {
+  background: #04070c;
+  border: 1px solid #0d1e2c;
+  padding: 7px 9px;
+  margin-bottom: 6px;
+}
+
+.person-id {
+  font-size: 14px;
+  font-weight: bold;
+  color: #00d4ff;
+  letter-spacing: 2px;
+  margin-bottom: 4px;
+}
+
+.person-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  margin-bottom: 2px;
+}
+
+.color-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  margin-right: 3px;
+  vertical-align: middle;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.wb-button {
+  margin-top: 5px;
+  width: 100%;
+  background: transparent;
+  border: 1px solid #1e3040;
+  color: #7090a0;
+  font-family: 'Courier New', monospace;
+  font-size: 9px;
+  letter-spacing: 1px;
+  padding: 3px;
+  cursor: pointer;
+}
+
+.wb-button.on {
+  border-color: #00d4ff;
+  color: #00d4ff;
+}
+
+.wb-panel {
+  margin-top: 5px;
+  padding: 5px 7px;
+  background: rgba(0, 212, 255, 0.03);
+  border: 1px solid rgba(0, 212, 255, 0.15);
+  font-size: 9px;
+  display: none;
+}
+
+.wb-panel.show {
+  display: block;
+}
+
+.wb-crop {
+  width: 100%;
+  margin-top: 4px;
+  border: 1px solid #0d1e2c;
+}
+
+.no-persons {
+  color: #1e3040;
+  font-size: 10px;
+  text-align: center;
+  margin-top: 16px;
+}
+
+#minimap-wrap {
+  padding: 7px 8px;
+  border-top: 1px solid #0d1e2c;
+}
+
+.minimap-label {
+  font-size: 8px;
+  color: #1e3040;
+  letter-spacing: 2px;
+  margin-bottom: 3px;
+}
+
+#minimap {
+  width: 100%;
+  height: 60px;
+  background: #020508;
+  border: 1px solid #0d1e2c;
+  position: relative;
+  overflow: hidden;
+}
+
+.zone-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #0d1e2c;
+}
+
+.zone-label {
+  position: absolute;
+  top: 2px;
+  font-size: 7px;
+  color: #1e3040;
+}
+
+.map-dot {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #00ff88;
+  box-shadow: 0 0 5px #00ff88;
+  transform: translate(-50%, -50%);
+  font-size: 6px;
+  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.map-bag {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  background: #ff7b00;
+  box-shadow: 0 0 5px #ff7b00;
+  transform: translate(-50%, -50%);
+}
+
+#controls {
+  padding: 7px 8px;
+  border-top: 1px solid #0d1e2c;
+  display: flex;
+  gap: 5px;
+}
+
+.ctrl-btn {
+  flex: 1;
+  background: transparent;
+  border: 1px solid #1e3040;
+  color: #7090a0;
+  font-family: 'Courier New', monospace;
+  font-size: 8px;
+  letter-spacing: 1px;
+  padding: 4px 2px;
+  cursor: pointer;
+}
+
+.ctrl-btn.danger:hover {
+  border-color: #ff1a1a;
+  color: #ff1a1a;
+}
+
+#connect-bar {
+  padding: 6px 8px;
+  border-top: 1px solid #0d1e2c;
+  display: flex;
+  gap: 5px;
+}
+
+#ip-input {
+  flex: 1;
+  background: #04070c;
+  border: 1px solid #0d1e2c;
+  color: #00d4ff;
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  padding: 4px 7px;
+  outline: none;
+}
+
+#connect-btn {
+  background: #00d4ff;
+  color: #000;
+  border: none;
+  font-family: 'Courier New', monospace;
+  font-size: 9px;
+  font-weight: bold;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<div id="header">
+  <div class="logo">MURAQIB<small>AI SAFETY SURVEILLANCE</small></div>
+  <div class="header-right">
+    <span id="clock">--:--:--</span>
+    <div class="signal">
+      <div class="dot" id="signal-dot"></div>
+      <span id="signal-text">DISCONNECTED</span>
+    </div>
+  </div>
+</div>
+
+<div id="status-bar" class="CLEAR">
+  <div class="pill CLEAR" id="status-pill">MURAQIB: CLEAR</div>
+  <div class="meta">
+    <span>PERSONS: <span id="m-persons">0</span></span>
+    <span>FPS: <span id="m-fps">0</span></span>
+    <span>FACE: <span id="m-face">-</span></span>
+    <span>BAG: <span id="m-bag">-</span></span>
+    <span>ZONE: <span id="m-zone">-</span></span>
+  </div>
+</div>
+
+<div id="body">
+
+  <div id="left">
+
+    <div id="feed-wrap">
+      <img id="feed" src="" alt="">
+    </div>
+
+    <div id="bottom-row">
+
+      <div class="panel">
+        <div class="panel-header">TARGET PROFILE ANALYSIS</div>
+        <div class="target-body">
+          <div class="target-row">
+            <span class="target-label">THREAT OBJECT</span>
+            <span class="target-value" id="tp-obj">-</span>
+          </div>
+          <div class="target-row">
+            <span class="target-label">CONFIDENCE</span>
+            <span class="target-value" id="tp-conf">-</span>
+          </div>
+          <div class="target-row">
+            <span class="target-label">LINKED BAG</span>
+            <span class="target-value" id="tp-bag">-</span>
+          </div>
+          <div class="target-row">
+            <span class="target-label">SCAN MODE</span>
+            <span class="target-value" id="tp-scan">PASSIVE</span>
+          </div>
+          <div class="target-row">
+            <span class="target-label">ALERT STATUS</span>
+            <span class="target-value" id="tp-status">CLEAR</span>
+          </div>
+          <div class="target-row">
+            <span class="target-label">ZONE</span>
+            <span class="target-value" id="tp-zone">-</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">EVENT TIMELINE</div>
+        <div id="timeline"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">WEAPON ZOOM</div>
+        <div id="weapon-zoom">
+          <span>NO ACTIVE THREAT</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="sidebar">
+
+    <div class="panel-header">PERSONS IN FRAME</div>
+
+    <div id="persons">
+      <div class="no-persons">NO PERSONS DETECTED</div>
+    </div>
+
+    <div id="minimap-wrap">
+      <div class="minimap-label">ZONE MAP</div>
+      <div id="minimap">
+        <div class="zone-line" style="left: 20%"></div>
+        <div class="zone-line" style="left: 40%"></div>
+        <div class="zone-line" style="left: 60%"></div>
+        <div class="zone-line" style="left: 80%"></div>
+        <div class="zone-label" style="left: 1%">ENTRY</div>
+        <div class="zone-label" style="left: 21%">LEFT</div>
+        <div class="zone-label" style="left: 41%">CTR</div>
+        <div class="zone-label" style="left: 61%">RIGHT</div>
+        <div class="zone-label" style="left: 81%">EXIT</div>
+      </div>
+    </div>
+
+    <div id="controls">
+      <button class="ctrl-btn danger" onclick="resetAlert()">RESET ALERT</button>
+      <button class="ctrl-btn" onclick="exportLog()">EXPORT LOG</button>
+    </div>
+
+    <div id="connect-bar">
+      <input id="ip-input" type="text" placeholder="Pi IP e.g. 192.168.1.100">
+      <button id="connect-btn" onclick="connect()">CONNECT</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+var BASE = "";
+var poller = null;
+var showWB = {};
+var lastFrameCount = -1;
+var staleTimer = null;
+
+var COLOR_MAP = {
+  Red: "#e53935",
+  Orange: "#fb8c00",
+  Yellow: "#fdd835",
+  Green: "#43a047",
+  Blue: "#1e88e5",
+  Purple: "#8e24aa",
+  Pink: "#f06292",
+  White: "#eeeeee",
+  Black: "#222",
+  Gray: "#757575",
+  Brown: "#6d4c41",
+  "-": "transparent",
+  Unknown: "transparent"
+};
+
+
+function updateClock() {
+  var now = new Date();
+  var t = now.toLocaleTimeString("en-GB", { hour12: false });
+  document.getElementById("clock").textContent = t;
+}
+setInterval(updateClock, 1000);
+
+
+function connect() {
+  var ip = document.getElementById("ip-input").value.trim();
+  if (!ip) return;
+
+  BASE = "http://" + ip + ":5000";
+  localStorage.setItem("muraqib_ip", ip);
+
+  var feed = document.getElementById("feed");
+  feed.src = BASE + "/stream";
+  feed.onerror = function () { setSignal(false); };
+  feed.onload = function () { setSignal(true); };
+
+  if (poller) clearInterval(poller);
+  poller = setInterval(pollState, 700);
+}
+
+
+function setSignal(ok) {
+  var dot = document.getElementById("signal-dot");
+  var txt = document.getElementById("signal-text");
+
+  if (ok) {
+    dot.className = "dot live";
+    txt.textContent = "LIVE SIGNAL";
+  } else {
+    dot.className = "dot";
+    txt.textContent = "NO SIGNAL";
+  }
+}
+
+
+function pollState() {
+  if (!BASE) return;
+
+  fetch(BASE + "/state", { cache: "no-store" })
+    .then(function (res) {
+      if (!res.ok) throw new Error("bad");
+      return res.json();
+    })
+    .then(function (data) {
+      if (data.frame_count === lastFrameCount) {
+        if (!staleTimer) {
+          staleTimer = setTimeout(function () { setSignal(false); }, 3000);
+        }
+        return;
+      }
+      lastFrameCount = data.frame_count;
+      if (staleTimer) {
+        clearTimeout(staleTimer);
+        staleTimer = null;
+      }
+      setSignal(true);
+      render(data);
+    })
+    .catch(function () {
+      setSignal(false);
+    });
+}
+
+
+function render(d) {
+  var status = d.status || "CLEAR";
+
+  document.getElementById("status-bar").className = status;
+
+  var pill = document.getElementById("status-pill");
+  pill.className = "pill " + status;
+  if (status === "THREAT") {
+    pill.textContent = "MURAQIB: THREAT";
+  } else if (status === "BAG_DETECTED") {
+    pill.textContent = "MURAQIB: BAG DETECTED";
+  } else {
+    pill.textContent = "MURAQIB: CLEAR";
+  }
+
+  document.getElementById("m-persons").textContent = d.persons.length;
+  document.getElementById("m-fps").textContent = d.fps;
+  document.getElementById("m-face").textContent = d.face_active ? "ACTIVE" : "-";
+  document.getElementById("m-bag").textContent = d.bag ? d.bag.label : "-";
+  document.getElementById("m-zone").textContent = d.bag ? d.bag.zone : "-";
+
+  document.getElementById("feed-wrap").className = (status === "THREAT") ? "threat" : "";
+
+  renderTargetPanel(d);
+  renderWeaponZoom(d);
+  renderTimeline(d.log);
+  renderPersons(d.persons);
+  renderMinimap(d.persons, d.bag);
+}
+
+
+function renderTargetPanel(d) {
+  var obj = document.getElementById("tp-obj");
+  var conf = document.getElementById("tp-conf");
+  var bag = document.getElementById("tp-bag");
+  var scan = document.getElementById("tp-scan");
+  var stat = document.getElementById("tp-status");
+  var zone = document.getElementById("tp-zone");
+
+  if (d.thermal_active) {
+    obj.textContent = "FIREARM_T01";
+    obj.className = "target-value alert";
+    conf.textContent = "99.8%";
+    bag.textContent = "BAG 1";
+    scan.textContent = "THERMAL";
+    stat.textContent = "ALERT";
+    stat.className = "target-value alert";
+    zone.textContent = d.bag ? d.bag.zone : "-";
+  } else {
+    obj.textContent = "-";
+    obj.className = "target-value";
+    conf.textContent = "-";
+    bag.textContent = "-";
+    scan.textContent = "PASSIVE";
+    stat.textContent = "CLEAR";
+    stat.className = "target-value";
+    zone.textContent = "-";
+  }
+}
+
+
+function renderWeaponZoom(d) {
+  var wz = document.getElementById("weapon-zoom");
+  if (d.thermal_active) {
+    wz.innerHTML = '<img src="' + BASE + '/weapon_crop?t=' + Date.now() + '">';
+  } else {
+    wz.innerHTML = '<span>NO ACTIVE THREAT</span>';
+  }
+}
+
+
+function renderTimeline(log) {
+  if (!log || !log.length) return;
+
+  var html = "";
+  for (var i = 0; i < log.length; i++) {
+    var e = log[i];
+    var cls = "log-entry";
+    if (i === 0) cls += " new";
+    if (e.level === "threat") cls += " threat";
+    else if (e.level === "warn") cls += " warn";
+    html += '<div class="' + cls + '">[' + e.ts + '] ' + e.msg + '</div>';
+  }
+  document.getElementById("timeline").innerHTML = html;
+}
+
+
+function renderPersons(persons) {
+  var el = document.getElementById("persons");
+
+  if (!persons.length) {
+    el.innerHTML = '<div class="no-persons">NO PERSONS DETECTED</div>';
+    return;
+  }
+
+  var html = "";
+  for (var i = 0; i < persons.length; i++) {
+    var p = persons[i];
+    var wbOn = showWB[p.id] || false;
+
+    var statusColor = p.in_frame ? "#00ff88" : "#1e3040";
+    var statusText = p.in_frame ? "IN FRAME" : "NOT VISIBLE";
+
+    var topColor = COLOR_MAP[p.color_top] || "transparent";
+    var botColor = COLOR_MAP[p.color_bot] || "transparent";
+
+    var wbHtml = "";
+    if (wbOn) {
+      wbHtml = '<div class="wb-panel show">' +
+        '<div>ZONE: ' + p.zone + '</div>' +
+        '<div>PATH: ' + p.path.join(" > ") + '</div>' +
+        '<div>ENTRY: ' + p.first + '</div>' +
+        '<img class="wb-crop" src="' + BASE + '/person_crop/' + p.id + '?t=' + Date.now() + '">' +
+        '</div>';
+    }
+
+    html += '<div class="person-card">' +
+      '<div class="person-id">PERSON ' + p.id + '</div>' +
+      '<div class="person-row">' +
+        '<span>TOP COLOR</span>' +
+        '<span><span class="color-dot" style="background:' + topColor + '"></span>' + p.color_top + '</span>' +
+      '</div>' +
+      '<div class="person-row">' +
+        '<span>BTM COLOR</span>' +
+        '<span><span class="color-dot" style="background:' + botColor + '"></span>' + p.color_bot + '</span>' +
+      '</div>' +
+      '<div class="person-row">' +
+        '<span>STATUS</span>' +
+        '<span style="color:' + statusColor + '">' + statusText + '</span>' +
+      '</div>' +
+      '<button class="wb-button ' + (wbOn ? 'on' : '') + '" onclick="toggleWB(' + p.id + ')">' +
+        (wbOn ? "HIDE WHEREABOUTS" : "SHOW WHEREABOUTS") +
+      '</button>' +
+      wbHtml +
+    '</div>';
+  }
+
+  el.innerHTML = html;
+}
+
+
+function toggleWB(pid) {
+  showWB[pid] = !showWB[pid];
+}
+
+
+function renderMinimap(persons, bag) {
+  var mm = document.getElementById("minimap");
+
+  var oldDots = mm.querySelectorAll(".map-dot, .map-bag");
+  for (var i = 0; i < oldDots.length; i++) {
+    oldDots[i].remove();
+  }
+
+  for (var j = 0; j < persons.length; j++) {
+    var p = persons[j];
+    if (!p.in_frame) continue;
+
+    var el = document.createElement("div");
+    el.className = "map-dot";
+    el.style.left = Math.min(97, Math.max(3, (p.cx / 640) * 100)) + "%";
+    el.style.top = Math.min(90, Math.max(10, (p.cy / 480) * 100)) + "%";
+    el.textContent = p.id;
+    mm.appendChild(el);
+  }
+
+  if (bag && bag.box) {
+    var bx1 = bag.box[0];
+    var bx2 = bag.box[2];
+    var sq = document.createElement("div");
+    sq.className = "map-bag";
+    sq.style.left = Math.min(97, Math.max(3, ((bx1 + bx2) / 2 / 640) * 100)) + "%";
+    sq.style.top = "50%";
+    mm.appendChild(sq);
+  }
+}
+
+
+function resetAlert() {
+  fetch(BASE + "/reset", { method: "POST" }).catch(function () {});
+}
+
+
+function exportLog() {
+  var txt = document.getElementById("timeline").innerText;
+  var a = document.createElement("a");
+  a.href = "data:text/plain," + encodeURIComponent(txt);
+  a.download = "muraqib_log_" + Date.now() + ".txt";
+  a.click();
+}
+
+
+var savedIP = localStorage.getItem("muraqib_ip");
+if (savedIP) {
+  document.getElementById("ip-input").value = savedIP;
+  setTimeout(connect, 400);
+}
+</script>
+
+</body>
+</html>
